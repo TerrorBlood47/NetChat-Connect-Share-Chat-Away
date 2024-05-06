@@ -9,6 +9,12 @@ import MessageCard from './MessageCard/MessageCard'
 import "./HomePage.css"
 import { useNavigate } from 'react-router-dom'
 import Profile from './Profile'
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
+import CreateGroup from './Group/CreateGroup'
+
+
 
 const HomePage = () => {
 
@@ -17,6 +23,21 @@ const HomePage = () => {
     const [content, setContent] = useState("");
     const [isProfile, setIsProfile] = useState(false);
     const navigate = useNavigate();
+    const [isGroup, setIsGroup] = useState(false);
+
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleCreateGroup = () =>{
+        
+        setIsGroup(true);
+    }
 
     const handleClickOnChatCard = () => {
         setCurrentChat(true)
@@ -32,6 +53,10 @@ const HomePage = () => {
         setIsProfile(true);
     }
 
+    const handleCloseOpenProfile = () => {
+        setIsProfile(false);
+    }
+
     return (
         <div className='relative'>
             <div className=' w-full py-14 bg-[#00a884] '></div>
@@ -39,24 +64,62 @@ const HomePage = () => {
                 <div className='left w-[30%] bg-[#e8e9ec] h-full '>
 
 
-                    {/* Profile */}
-                    {isProfile && <Profile />}
+                    {isGroup && <CreateGroup/>}
 
-                    {!isProfile &&
+                    {/* Profile */}
+                    {isProfile && <Profile handleCloseOpenProfile={handleCloseOpenProfile} />}
+
+                    {!isProfile && !isGroup &&
                         <div className='w-full'>
 
 
-                            <div onClick={handleNavigate} className='flex justify-between items-center p-3'>
+                            <div className='flex justify-between items-center p-3'>
 
                                 <div className=' flex items-center space-x-3'>
-                                    <img className='rounded-full w-10 h-10 cursor-pointer'
+                                    <img
+                                        onClick={handleNavigate}
+                                        className='rounded-full w-10 h-10 cursor-pointer'
                                         src='https://cdn.pixabay.com/photo/2023/08/18/15/02/cat-8198720_1280.jpg'
                                         alt='' />
                                     <p>username</p>
                                 </div>
+                                
+                                
+                                
                                 <div className='space-x-3 test-2xl flex'>
-                                    <TbCircleDashed />
+                                    <TbCircleDashed
+                                        className=' cursor-pointer'
+                                        onClick={() => navigate("/status")} />
                                     <BiCommentDetail />
+
+                                    <div>
+                                    <BsThreeDotsVertical
+                                            id="basic-button"
+                                            aria-controls={open ? 'basic-menu' : undefined}
+                                            aria-haspopup="true"
+                                            aria-expanded={open ? 'true' : undefined}
+                                            onClick={handleClick}
+                                        >
+                                            
+                                        </BsThreeDotsVertical>
+                                        <Menu
+                                            id="basic-menu"
+                                            anchorEl={anchorEl}
+                                            open={open}
+                                            onClose={handleClose}
+                                            MenuListProps={{
+                                                'aria-labelledby': 'basic-button',
+                                            }}
+                                        >
+                                            <MenuItem onClick={handleClose}>Profile</MenuItem>
+                                            <MenuItem onClick={handleCreateGroup}>Create Group</MenuItem>
+                                            <MenuItem onClick={handleClose}>Logout</MenuItem>
+                                        </Menu>
+
+                                    </div>
+
+                                    
+
                                 </div>
                             </div>
 

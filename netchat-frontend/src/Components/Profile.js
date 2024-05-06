@@ -1,21 +1,32 @@
 
-import React from 'react'
+import React, { useState } from 'react'
 
-import { BsArrowLeft, BsPencil } from "react-icons/bs"
+import { BsArrowLeft, BsCheck2, BsPencil } from "react-icons/bs"
 import { useNavigate } from 'react-router-dom'
 
-const Profile = () => {
+const Profile = ({handleCloseOpenProfile}) => {
 
-    const navigate = useNavigate();
+    const [flag, setFlag] = useState(false);
+    const [username, setUsername] = useState(null);
 
-    const handleNavigate = () => {
-        navigate(-1);  //go back to where u came from
+
+
+    const handleFlag = () => {
+        setFlag(true);
+    }
+
+    const handleCheckClick = () => {
+        setFlag(false);
+    }
+
+    const handleChange = (e) => {
+        setUsername(e.target.value);
     }
 
     return (
         <div className=' h-full w-full'>
             <div className=' flex items-center space-x-10 bg-green-400 text-white pt-16 px-10 pb-5 '>
-                <BsArrowLeft className=' cursor-pointer text-2xl font-bold' onClick={handleNavigate} />
+                <BsArrowLeft className=' cursor-pointer text-2xl font-bold' onClick={handleCloseOpenProfile} />
                 <p className=' cursor-pointer font-semibold'>Profile</p>
             </div>
 
@@ -37,12 +48,26 @@ const Profile = () => {
             <div className=' bg-white px-3'>
                 <p className=' py-3 '> Your Name </p>
 
-                <div className=' w-full flex  justify-between items-center'>
-                    <p className=' py-3'>username</p>
-                    <BsPencil className=' cursor-pointer' />
-                </div>
+                {!flag &&
+                    <div className=' w-full flex  justify-between items-center'>
+                        <p className=' py-3'>{username || "username"}</p>
+                        <BsPencil onClick={handleFlag} className=' cursor-pointer' />
+                    </div>}
+
+
+                {flag &&
+                    <div className=' w-full flex justify-between items-center py-2' >
+                        <input
+                            onChange={handleChange}
+                            className='w-[80%] outline-none border-b-2 border-blue-700 p-2'
+                            type='text'
+                            placeholder='Enter your name'
+                        ></input>
+                        <BsCheck2 onClick={handleCheckClick} className=' cursor-pointer text-2xl' />
+                    </div>}
 
             </div>
+
 
 
 
