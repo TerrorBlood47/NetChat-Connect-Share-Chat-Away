@@ -13,6 +13,10 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import CreateGroup from './Group/CreateGroup'
+import { useDispatch, useSelector } from 'react-redux'
+import { LogoutAction } from '../Redux/Auth/Action'
+import { useEffect } from 'react'
+import { currentUser } from '../Redux/Auth/Action'
 
 
 
@@ -24,6 +28,9 @@ const HomePage = () => {
     const [isProfile, setIsProfile] = useState(false);
     const navigate = useNavigate();
     const [isGroup, setIsGroup] = useState(false);
+    const dispatch = useDispatch();
+    const { auth } = useSelector(store => store);
+    const token = localStorage.getItem("token");
 
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
@@ -34,8 +41,8 @@ const HomePage = () => {
         setAnchorEl(null);
     };
 
-    const handleCreateGroup = () =>{
-        
+    const handleCreateGroup = () => {
+
         setIsGroup(true);
     }
 
@@ -57,6 +64,21 @@ const HomePage = () => {
         setIsProfile(false);
     }
 
+    const handleLogOut = () => {
+        dispatch(LogoutAction())
+        navigate("/signup");
+    }
+
+    useEffect(() => {
+        if (!auth?.reqUser) {
+            navigate("signup");
+        }
+    }, [auth?.reqUser]);
+
+    useEffect(() => {
+        dispatch(currentUser(token))
+    },[token]);
+
     return (
         <div className='relative'>
             <div className=' w-full py-14 bg-[#00a884] '></div>
@@ -64,7 +86,7 @@ const HomePage = () => {
                 <div className='left w-[30%] bg-[#e8e9ec] h-full '>
 
 
-                    {isGroup && <CreateGroup/>}
+                    {isGroup && <CreateGroup />}
 
                     {/* Profile */}
                     {isProfile && <Profile handleCloseOpenProfile={handleCloseOpenProfile} />}
@@ -81,11 +103,11 @@ const HomePage = () => {
                                         className='rounded-full w-10 h-10 cursor-pointer'
                                         src='https://cdn.pixabay.com/photo/2023/08/18/15/02/cat-8198720_1280.jpg'
                                         alt='' />
-                                    <p>username</p>
+                                    <p>{auth.reqUser?.fullname}</p>
                                 </div>
-                                
-                                
-                                
+
+
+
                                 <div className='space-x-3 test-2xl flex'>
                                     <TbCircleDashed
                                         className=' cursor-pointer'
@@ -93,14 +115,14 @@ const HomePage = () => {
                                     <BiCommentDetail />
 
                                     <div>
-                                    <BsThreeDotsVertical
+                                        <BsThreeDotsVertical
                                             id="basic-button"
                                             aria-controls={open ? 'basic-menu' : undefined}
                                             aria-haspopup="true"
                                             aria-expanded={open ? 'true' : undefined}
                                             onClick={handleClick}
                                         >
-                                            
+
                                         </BsThreeDotsVertical>
                                         <Menu
                                             id="basic-menu"
@@ -113,12 +135,12 @@ const HomePage = () => {
                                         >
                                             <MenuItem onClick={handleClose}>Profile</MenuItem>
                                             <MenuItem onClick={handleCreateGroup}>Create Group</MenuItem>
-                                            <MenuItem onClick={handleClose}>Logout</MenuItem>
+                                            <MenuItem onClick={handleLogOut}>Logout</MenuItem>
                                         </Menu>
 
                                     </div>
 
-                                    
+
 
                                 </div>
                             </div>
@@ -183,7 +205,7 @@ const HomePage = () => {
                                 <img className=' w-10 h-10 rounded-full'
                                     src='https://cdn.pixabay.com/photo/2023/11/08/23/23/common-kingfisher-8376008_1280.jpg' alt='' />
                                 <p>
-                                    username
+                                    {auth.reqUser?.fullname}
                                 </p>
                             </div>
                             <div className=' py-3 space-x-3 flex items-center px-3 '>
