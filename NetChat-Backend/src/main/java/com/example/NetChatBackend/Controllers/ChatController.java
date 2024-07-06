@@ -29,12 +29,15 @@ public class ChatController {
 	
 	
 	
-	@PostMapping("/single/")
+	@PostMapping("/single")
 	public ResponseEntity< Chat > createChatHandler( @RequestBody SingleChatRequest singleChatRequest,
 	                                                 @RequestHeader("Authorization") String jwt) throws UserException {
 		
 		User reqUser = userService.findUserProfile(jwt);
 		Chat chat = chatService.createChat(reqUser, singleChatRequest.getUserId());
+		
+		System.out.println(chat);
+		
 		return ResponseEntity.ok().body(chat);
 	}
 	

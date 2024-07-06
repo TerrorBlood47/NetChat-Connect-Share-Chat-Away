@@ -120,7 +120,7 @@ const SignUp = () => {
                     variant="standard"
                     sx={{ width: '100%' }}
                 >
-                    Login Successful!!!
+                    SignUp Successful!!!
                 </Alert>
             </Snackbar>
 

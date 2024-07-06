@@ -29,21 +29,27 @@ public class UserController {
 		return new ResponseEntity<User>(user, HttpStatus.ACCEPTED);
 	}
 	
-	@GetMapping("/{query}")
-	public ResponseEntity< List<User> > searchUserHandler( @PathVariable("query") String query){
-		List<User> users = userService.searchUser(query);
+	@GetMapping("/search")
+	public ResponseEntity< List<User> > searchUserHandler( @RequestParam("name") String name){
+		
+		System.out.println("query : " + name);
+		
+		List<User> users = userService.searchUser(name);
+		
+		System.out.println("users : " + users);
 		
 		return new ResponseEntity<>(users, HttpStatus.OK);
 	}
 	
-	@PutMapping("/update")
+	@PutMapping("/update/{userId}")
 	public ResponseEntity< ApiResponse > updateUserHandler( @RequestBody UpdateUserRequest req,
+															@PathVariable Integer userId,
 	                                                        @RequestHeader("Authorization") String token) throws UserException {
 		
 		User user = userService.findUserProfile(token);
-		userService.updateUser(user.getId(),req);
+		userService.updateUser(userId,req);
 		
-		ApiResponse res = new ApiResponse("USER UPDATED SUCCESFULLY", true);
+		ApiResponse res = new ApiResponse("USER UPDATED SUCCESSFULLY", true);
 		
 		return new ResponseEntity<ApiResponse>(res, HttpStatus.ACCEPTED);
 	}

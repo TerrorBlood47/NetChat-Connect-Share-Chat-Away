@@ -14,9 +14,12 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import CreateGroup from './Group/CreateGroup'
 import { useDispatch, useSelector } from 'react-redux'
-import { LogoutAction } from '../Redux/Auth/Action'
+import { LogoutAction, searchUser } from '../Redux/Auth/Action'
 import { useEffect } from 'react'
 import { currentUser } from '../Redux/Auth/Action'
+import { createChat, getUsersChat } from './../Redux/Chat/Action'
+import { createGroup } from '../Redux/Chat/Action'
+import { createMessage, getAllMessages } from '../Redux/Message/Action'
 
 
 
@@ -29,7 +32,7 @@ const HomePage = () => {
     const navigate = useNavigate();
     const [isGroup, setIsGroup] = useState(false);
     const dispatch = useDispatch();
-    const { auth } = useSelector(store => store);
+    const { auth, chat, message } = useSelector(store => store);
     const token = localStorage.getItem("token");
 
     const [anchorEl, setAnchorEl] = useState(null);
@@ -46,14 +49,39 @@ const HomePage = () => {
         setIsGroup(true);
     }
 
-    const handleClickOnChatCard = () => {
-        setCurrentChat(true)
+    const handleClickOnChatCard = (userId) => {
+        // setCurrentChat(item);
+        // console.log(userId, " ---- ", item);
+        dispatch(createChat({ token, data: { userId } }));
+        setQueries("");
     }
 
-    const handleSearch = () => { }
+    const handleSearch = (keyword) => {
+        dispatch(searchUser({ keyword, token }));
+    }
 
     const handleCreateNewMessage = () => {
+        dispatch(createMessage({
+            token: token,
+            data: { chatId: currentChat?.id, content: content }
+        }));
+        console.log("new message created");
     }
+
+    useEffect(() => {
+        dispatch(getUsersChat({ token }));
+
+    }, [chat?.createChat, chat?.createGroupChat]);
+
+    useEffect(() => {
+
+        if (currentChat?.id) {
+            dispatch(getAllMessages({ chatId: currentChat?.id, token: token }));
+        }
+
+    }, [currentChat, message.newMessage])
+
+
 
     const handleNavigate = () => {
 
@@ -77,7 +105,15 @@ const HomePage = () => {
 
     useEffect(() => {
         dispatch(currentUser(token))
-    },[token]);
+    }, [token]);
+
+    const handleCurrentChat = (item) => {
+        setCurrentChat(item);
+    }
+
+    console.log("current chat", currentChat);
+    console.log("message --- ", message);
+    
 
     return (
         <div className='relative'>
@@ -166,11 +202,51 @@ const HomePage = () => {
 
                             {/* all users */}
                             <div className=' bg-white overflow-y-scroll h-[72vh] px-3'>
-                                {queries && [1, 1, 1, 1, 1, 1]
-                                    .map((item) =>
-                                        <div onClick={handleClickOnChatCard}>
+
+
+                                {queries && auth?.searchUser?.map((item) =>
+                                    <div onClick={() => handleClickOnChatCard(item?.id)}>
+                                        <hr />
+                                        <ChatCard
+                                            name={item?.fullname}
+                                            userImg={item?.profile_pic ||
+                                                'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'} />
+                                    </div>
+                                )}
+
+
+
+
+                                {chat.chats.length > 0
+                                    && !queries &&
+                                    chat.chats?.map((item) =>
+                                        <div onClick={() => handleCurrentChat(item)}>
                                             <hr />
-                                            <ChatCard />
+                                            {item.isGroup ?
+                                                (
+                                                    <ChatCard
+                                                        name={item?.chat_name}
+                                                        userImg={item?.chat_image ||
+                                                            'https://cdn.pixabay.com/photo/2016/11/14/17/39/group-1824145_1280.png'}
+                                                    />
+                                                ) :
+                                                (
+                                                    <ChatCard
+                                                        isChat={true}
+                                                        name={
+                                                            auth.reqUser?.id !== item.users[0]?.id ?
+                                                                item.users[0]?.fullname : item.users[1]?.fullname
+                                                        }
+                                                        userImg={
+                                                            auth.reqUser?.id !== item.users[0]?.id ?
+                                                                item.users[0]?.profile_pic || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+                                                                : item.users[1]?.profile_pic || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+                                                        }
+                                                    />
+                                                )
+
+
+                                            }
                                         </div>
                                     )}
 
@@ -203,9 +279,21 @@ const HomePage = () => {
                         <div className='flex justify-between'>
                             <div className=' py-3 space-x-3 flex items-center px-3'>
                                 <img className=' w-10 h-10 rounded-full'
-                                    src='https://cdn.pixabay.com/photo/2023/11/08/23/23/common-kingfisher-8376008_1280.jpg' alt='' />
+                                    src={currentChat.isGroup ?
+                                        currentChat?.chat_image ||
+                                        "https://cdn.pixabay.com/photo/2016/11/14/17/39/group-1824145_1280.png" :
+                                        (auth.reqUser?.id !== currentChat?.users[0]?.id ?
+                                            currentChat?.users[0]?.profile_pic ||
+                                            'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
+                                            :
+                                            currentChat?.users[1]?.profile_pic ||
+                                            'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png')
+                                    } alt='' />
                                 <p>
-                                    {auth.reqUser?.fullname}
+                                    {currentChat.isGroup ? currentChat.chat_name :
+                                        (auth?.reqUser?.id === currentChat?.users[0]?.id ?
+                                            currentChat.users[1]?.fullname : currentChat.users[0]?.fullname)
+                                    }
                                 </p>
                             </div>
                             <div className=' py-3 space-x-3 flex items-center px-3 '>
@@ -219,7 +307,10 @@ const HomePage = () => {
                     {/* single message section */}
                     <div className=' px-10 h-[85%] overflow-y-scroll'>
                         <div className=' space-y-1 flex flex-col justify-center mt-20 py-2'>
-                            {[1, 1, 1, 1, 1, 1].map((item, i) => <MessageCard isReqUserMessage={i % 2 === 0} content={"message"} />)}
+                            {message.messages?.length > 0
+                                && message.messages?.map((item, i) =>
+                                    <MessageCard isReqUserMessage={item.user.id === auth.reqUser.id} 
+                                    content={item?.content} />)}
                         </div>
                     </div>
 

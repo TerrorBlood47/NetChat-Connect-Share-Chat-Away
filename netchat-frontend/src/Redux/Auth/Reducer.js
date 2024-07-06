@@ -1,9 +1,10 @@
-import { searchUser } from "./Action"
+
 import { LOGIN, REGISTER, REQ_USER, SEARCH_USER, UPDATE_USER } from "./ActionType"
 
 const initialValue = {
     signup: null,
     signin: null,
+    reqUser:null
 
 }
 
