@@ -32,6 +32,7 @@ public class AppConfig {
 						.requestMatchers("/swagger-ui/**").permitAll()
 						.requestMatchers("/swagger-resources/**").permitAll()
 						.requestMatchers("/swagger-ui.html").permitAll()
+						.requestMatchers("/ws/**").permitAll()
 						
 				)
 				.addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)

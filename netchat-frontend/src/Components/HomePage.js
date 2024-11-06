@@ -22,6 +22,9 @@ import { createGroup } from '../Redux/Chat/Action'
 import { createMessage, getAllMessages } from '../Redux/Message/Action'
 
 
+import SockJS from 'sockjs-client'
+import {Stomp} from '@stomp/stompjs';
+// import { Client } from '@stomp/stompjs';
 
 const HomePage = () => {
 
@@ -37,6 +40,145 @@ const HomePage = () => {
 
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
+
+
+    const [stompClient, setStompClient] = useState(null);
+    const [isConnect, setIsConnect] = useState(false);
+    const [messages, setMessages] = useState([]);
+    
+    const connect = () => {
+        const socket = new SockJS('http://localhost:8080/ws');
+        const temp = Stomp.over(socket);
+
+        // setStompClient(temp);
+
+        // const client = new Client({
+        //     webSocketFactory: () => socket,
+        //     reconnectDelay: 1000,
+        //     debug: (str) => {
+        //         console.log(str);
+        //     },
+        // });
+
+
+        const headers = {
+            Authorization: `Bearer ${token}`,
+            "X-XSRF-TOKEN": getCookies("XSRF-TOKEN")
+        }
+
+
+        temp.connect(headers, onConnect, onError);
+        setStompClient(temp);
+
+        // client.onConnect = (frame) => {
+        //     console.log('Connected: ' + frame);
+        //     setIsConnect(true);
+        //     // Subscribe to your topic here
+        // };
+
+        // client.onStompError = (frame) => {
+        //     console.error('Broker reported error: ' + frame.headers['message']);
+        //     console.error('Additional details: ' + frame.body);
+        // };
+
+        // client.activate();
+        // setStompClient(client);
+    }
+
+
+
+    function getCookies(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+
+    const onError = (error) => {
+        console.log("stomp error-----> ", error);
+        setIsConnect(false);
+    }
+
+
+    const onConnect=()=>{
+        console.log("----------stomp connected----------");
+        setIsConnect(true);
+    }
+
+    useEffect(() => {
+
+        if(message.newMessage && stompClient){
+            setMessages(prevMessages => [...prevMessages, message.newMessage]);
+
+            console.log("new message sent ------------------ ", message.newMessage);
+
+            stompClient.send("/app/message", {} ,JSON.stringify(message.newMessage));
+
+            // stompClient.publish({
+            //     destination: '/app/message',
+            //     body: JSON.stringify(message),
+            //     headers: {
+            //         Authorization: `Bearer ${token}`
+            //     }
+            // });
+        
+        }
+        else{
+            console.log("no new message");
+        }
+
+    }, [message.newMessage]);
+
+
+    useEffect(() => {
+
+        console.log("message updated ------------------ ", message.messages);
+        if (message.messages) {
+            setMessages(message.messages);
+        }
+        console.log("set messages  ------------------ ", messages);
+    }, [message.messages]);
+
+
+    const onMessageReceive = (payload) => {
+        console.log("receive message ------------------ ", JSON.parse(payload.body));
+
+        const receivedMessage = JSON.parse(payload.body);
+
+        setMessages(prevMessages => {
+            const updatedMessages = [...prevMessages, receivedMessage];
+            console.log("updated messages ------------------ ", updatedMessages);
+            return updatedMessages;
+        });
+
+    }
+
+
+
+    useEffect(() => {
+        if(isConnect && stompClient && auth.reqUser && currentChat){
+            const subscription = stompClient.subscribe(`/group/${currentChat.id}`, onMessageReceive);
+
+            console.log("subscribed---------------------");
+
+            return () => {
+                subscription.unsubscribe();
+            }
+        }
+    }, [isConnect, stompClient, auth.reqUser, currentChat]);
+    
+
+    useEffect(() => {
+        connect();
+    }, []);
+
+
+
+
+
+
+
+
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -111,9 +253,13 @@ const HomePage = () => {
         setCurrentChat(item);
     }
 
+    console.log("===============================");
     console.log("current chat", currentChat);
-    console.log("message --- ", message);
-    
+    console.log("messages --- ", messages);
+    console.log("stomp client --- ", stompClient);
+    console.log("is connect --- ", isConnect);
+    console.log("auth user --- ", auth.reqUser);
+    console.log("===============================");
 
     return (
         <div className='relative'>
@@ -307,8 +453,8 @@ const HomePage = () => {
                     {/* single message section */}
                     <div className=' px-10 h-[85%] overflow-y-scroll'>
                         <div className=' space-y-1 flex flex-col justify-center mt-20 py-2'>
-                            {message.messages?.length > 0
-                                && message.messages?.map((item, i) =>
+                            {messages?.length > 0
+                                && messages?.map((item, i) =>
                                     <MessageCard isReqUserMessage={item.user.id === auth.reqUser.id} 
                                     content={item?.content} />)}
                         </div>

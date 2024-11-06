@@ -41,7 +41,7 @@ public class ChatController {
 		return ResponseEntity.ok().body(chat);
 	}
 	
-	@PostMapping("/group/")
+	@PostMapping("/group")
 	public ResponseEntity< Chat > createGroupHandler( @RequestBody GroupChatRequest groupChatRequest,
 	                                                  @RequestHeader("Authorization") String jwt) throws UserException {
 		

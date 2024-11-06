@@ -37,4 +37,6 @@ public class Chat {
 	
 	@OneToMany
 	private List<Message> messages = new ArrayList<Message>();
+
+
 }

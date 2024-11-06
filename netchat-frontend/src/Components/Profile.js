@@ -9,7 +9,7 @@ const Profile = ({handleCloseOpenProfile}) => {
     const [flag, setFlag] = useState(false);
     const [username, setUsername] = useState(null);
 
-
+    const tempPicture = null;
 
     const handleFlag = () => {
         setFlag(true);
@@ -35,7 +35,7 @@ const Profile = ({handleCloseOpenProfile}) => {
                 <label htmlFor='imgInput'>
                     <img
                         className=' rounded-full w-[15vw] h-[15vw] cursor-pointer'
-                        src='https://media.istockphoto.com/id/1477641490/photo/glad-asian-woman-touching-neck.jpg?s=2048x2048&w=is&k=20&c=qUKWL7lJMP77Q_GL7Za3THFlw8nTk6gPuT4IN8ezHzI='
+                        src={ tempPicture || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}
                         alt=''
                     />
                 </label>
